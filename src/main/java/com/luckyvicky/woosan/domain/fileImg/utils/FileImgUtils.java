@@ -1,10 +1,5 @@
 package com.luckyvicky.woosan.domain.fileImg.utils;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.luckyvicky.woosan.domain.fileImg.entity.FileImg;
 import com.luckyvicky.woosan.domain.fileImg.repository.FileImgRepository;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,33 +9,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class FileImgUtils {
 
-    public static void uploadMultipartFile(AmazonS3 s3, String bucketName, String objectName, MultipartFile file, String type) throws IOException {
-        String savePath = bucketName + "/" + type;
-        try {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.getSize());
-            metadata.setContentType(file.getContentType());
-
-            s3.putObject(savePath, objectName, file.getInputStream(), metadata);
-            makeFilePublic(s3, objectName, savePath);
-        } catch (SdkClientException e) {
-            e.printStackTrace();
+    public static void uploadMultipartFile(String uploadDir, String objectName, MultipartFile file, String type) throws IOException {
+        Path savePath = Paths.get(uploadDir, type);
+        if (!Files.exists(savePath)) {
+            Files.createDirectories(savePath);
         }
-    }
-
-    public static void makeFilePublic(AmazonS3 s3, String objectName, String savePath) {
-        try {
-            s3.setObjectAcl(savePath, objectName, CannedAccessControlList.PublicRead);
-        } catch (SdkClientException e) {
-            e.printStackTrace();
-        }
+        Path filePath = savePath.resolve(objectName);
+        Files.copy(file.getInputStream(), filePath);
     }
 
     public static String getFileNameInUrl(String url) {
@@ -53,17 +37,7 @@ public class FileImgUtils {
         }
     }
 
-    public static String extractKeyFromUrl(String fileUrl, String type) {
-        String parseType = type + "/";
-        String prefix = "woosan/" + parseType;
-        int startIndex = fileUrl.indexOf(prefix) + prefix.length() - parseType.length();
-        if (startIndex == -1) {
-            throw new IllegalArgumentException("URL does not contain the expected prefix: " + prefix);
-        }
-        return fileUrl.substring(startIndex);
-    }
-
-    public static void saveFiles(AmazonS3 s3, FileImgRepository fileImgRepository, String bucketName, String type, Long targetId, List<MultipartFile> files) {
+    public static void saveFiles(String uploadDir, FileImgRepository fileImgRepository, String type, Long targetId, List<MultipartFile> files) {
         for (int i = 0; i < files.size(); i++) {
             String uuid = UUID.randomUUID().toString();
             String uniqueSaveName = uuid + "_" + files.get(i).getOriginalFilename();
@@ -79,7 +53,7 @@ public class FileImgUtils {
             fileImgRepository.save(fileImg);
 
             try {
-                uploadMultipartFile(s3, bucketName, uniqueSaveName, files.get(i), type);
+                uploadMultipartFile(uploadDir, uniqueSaveName, files.get(i), type);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Failed to upload file: " + files.get(i), e);
@@ -98,7 +72,7 @@ public class FileImgUtils {
         }
     }
 
-    public static void deleteFileFromTargetMap(AmazonS3 s3, FileImgRepository fileImgRepository, String bucketName, Map<Long, String> targetMap, String getFileName, String type) {
+    public static void deleteFileFromTargetMap(FileImgRepository fileImgRepository, String uploadDir, Map<Long, String> targetMap, String getFileName, String type) {
         for (Map.Entry<Long, String> entry : targetMap.entrySet()) {
             try {
                 String decodedEntryValue = URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.toString());
@@ -106,11 +80,11 @@ public class FileImgUtils {
                     FileImg targetImg = fileImgRepository.findById(entry.getKey()).orElse(null);
                     if (targetImg != null) {
                         fileImgRepository.deleteById(entry.getKey());
-                        s3.deleteObject(bucketName, type + "/" + targetImg.getUuid() + "_" + targetImg.getFileName());
+                        Files.deleteIfExists(Paths.get(uploadDir, type, targetImg.getUuid() + "_" + targetImg.getFileName()));
                     }
                     break;
                 }
-            } catch (UnsupportedEncodingException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

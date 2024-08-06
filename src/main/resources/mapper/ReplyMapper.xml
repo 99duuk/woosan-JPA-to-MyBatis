@@ -1,0 +1,50 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luckyvicky.woosan.domain.board.mapper.ReplyMapper">
+
+    <insert id="insertReply">
+        INSERT INTO reply (board_id, content, writer_id, parent_id)
+        VALUES (#{boardId}, #{content}, #{writerId}, #{parentId})
+    </insert>
+
+
+    <resultMap id="replyResultMap" type="com.luckyvicky.woosan.domain.board.dto.ReplyDTO$Response">
+        <id property="id" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="content" column="content"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="parentId" column="parent_id"/>
+        <collection property="children" ofType="com.luckyvicky.woosan.domain.board.dto.ReplyDTO$Response" column="id" select="findRepliesByParentId"/>
+    </resultMap>
+
+    <select id="findRepliesByBoardId" resultMap="replyResultMap">
+        SELECT r.id, r.board_id, r.content, r.likes_count, r.writer_id, m.nickname, r.reg_date, r.parent_id
+        FROM reply r
+        LEFT JOIN member m ON r.writer_id = m.id
+        WHERE r.board_id = #{boardId} AND r.parent_id IS NULL
+        ORDER BY r.reg_date DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="findRepliesByParentId" resultMap="replyResultMap">
+        SELECT r.id, r.board_id, r.content, r.likes_count, r.writer_id, m.nickname, r.reg_date, r.parent_id
+        FROM reply r
+        LEFT JOIN member m ON r.writer_id = m.id
+        WHERE r.parent_id = #{parentId}
+    </select>
+
+
+    <delete id="deleteById">
+        DELETE FROM reply WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByParentId">
+        DELETE FROM reply WHERE parent_id = #{parentId}
+    </delete>
+
+</mapper>

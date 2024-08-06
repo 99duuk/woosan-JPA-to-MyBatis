@@ -1,0 +1,12 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luckyvicky.woosan.domain.member.mybatisMapper.MemberMyBatisMapper">
+
+    <update id="updateMemberPoints">
+        UPDATE member
+        SET point = point + #{point}
+        WHERE id = #{memberId}
+    </update>
+</mapper>

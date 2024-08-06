@@ -1,6 +1,5 @@
 package com.luckyvicky.woosan.domain.fileImg.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.luckyvicky.woosan.domain.fileImg.dto.FileUpdateDTO;
 import com.luckyvicky.woosan.domain.fileImg.entity.FileImg;
 import com.luckyvicky.woosan.domain.fileImg.repository.FileImgRepository;
@@ -12,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,32 +23,36 @@ import java.util.stream.Collectors;
 public class FileImgServiceImpl implements FileImgService {
 
     private final FileImgRepository fileImgRepository;
-    private final AmazonS3 s3;
-    private final String bucketName;
+    private final String uploadDir;
 
-    public FileImgServiceImpl(FileImgRepository fileImgRepository, AmazonS3 s3, @Value("${cloud.ncp.s3.bucket-name}") String bucketName) {
+    public FileImgServiceImpl(FileImgRepository fileImgRepository, @Value("${file.upload-dir}") String uploadDir) {
         this.fileImgRepository = fileImgRepository;
-        this.s3 = s3;
-        this.bucketName = bucketName;
+        this.uploadDir = uploadDir;
     }
 
     @Override
     public void fileUploadMultiple(String type, Long targetId, List<MultipartFile> files) {
-        FileImgUtils.saveFiles(s3, fileImgRepository, bucketName, type, targetId, files);
+        FileImgUtils.saveFiles(uploadDir, fileImgRepository, type, targetId, files);
     }
 
     @SlaveDBRequest
     @Override
     public List<String> findFiles(String type, Long targetId) {
         return fileImgRepository.findByTypeAndTargetIdOrderByOrdAsc(type, targetId).stream()
-                .map(fileImg -> s3.getUrl(bucketName + fileImg.getPath(), fileImg.getUuid().toString() + "_" + fileImg.getFileName()).toString())
+                .map(fileImg -> "/img" + fileImg.getPath() + "/" + fileImg.getUuid() + "_" + fileImg.getFileName())
                 .collect(Collectors.toList());
     }
 
     @Override
     public void targetFilesDelete(String type, Long targetId) {
         List<FileImg> fileImgs = fileImgRepository.findByTypeAndTargetIdOrderByOrdAsc(type, targetId);
-        fileImgs.forEach(fileImg -> s3.deleteObject(bucketName + fileImg.getPath(), fileImg.getUuid().toString() + "_" + fileImg.getFileName()));
+        fileImgs.forEach(fileImg -> {
+            try {
+                Files.deleteIfExists(Paths.get(uploadDir + fileImg.getPath() + "/" + fileImg.getUuid() + "_" + fileImg.getFileName()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         fileImgRepository.deleteByTypeAndTargetId(type, targetId);
     }
 
@@ -59,7 +64,7 @@ public class FileImgServiceImpl implements FileImgService {
         String getFileName = FileImgUtils.getFileNameInUrl(beforeFile);
         FileImgUtils.populateTargetMap(existFiles, targetMap);
 
-        FileImgUtils.deleteFileFromTargetMap(s3, fileImgRepository, bucketName, targetMap, getFileName, type);
+        FileImgUtils.deleteFileFromTargetMap(fileImgRepository, uploadDir, targetMap, getFileName, type);
     }
 
     @Override

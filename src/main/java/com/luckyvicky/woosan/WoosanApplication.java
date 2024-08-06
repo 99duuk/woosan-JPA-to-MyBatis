@@ -1,5 +1,6 @@
 package com.luckyvicky.woosan;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
@@ -20,6 +21,11 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 @EnableRedisRepositories(basePackages = {
 		"com.luckyvicky.woosan.domain.member.repository.redis",
 		"com.luckyvicky.woosan.global.auth.repository"
+})
+@MapperScan(basePackages = {
+		"com.luckyvicky.woosan.domain.board.mapper",
+		"com.luckyvicky.woosan.domain.likes.mapper",
+		"com.luckyvicky.woosan.domain.member.mybatisMapper"
 })
 public class WoosanApplication {
 
