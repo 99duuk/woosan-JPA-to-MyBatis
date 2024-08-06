@@ -2,14 +2,11 @@ package com.luckyvicky.woosan.global.util;
 
 
 import com.luckyvicky.woosan.domain.board.dto.BoardDTO;
-import com.luckyvicky.woosan.domain.board.dto.RemoveDTO;
 import com.luckyvicky.woosan.domain.board.dto.ReplyDTO;
 import com.luckyvicky.woosan.domain.board.entity.Board;
 import com.luckyvicky.woosan.domain.board.entity.Reply;
 import com.luckyvicky.woosan.domain.board.exception.BoardException;
 import com.luckyvicky.woosan.domain.board.exception.ReplyException;
-import com.luckyvicky.woosan.domain.board.mapper.BoardMapper;
-import com.luckyvicky.woosan.domain.board.mapper.ReplyMapper;
 import com.luckyvicky.woosan.domain.board.repository.jpa.BoardRepository;
 import com.luckyvicky.woosan.domain.board.repository.jpa.ReplyRepository;
 import com.luckyvicky.woosan.domain.likes.exception.LikeException;
@@ -30,8 +27,6 @@ public class ValidationHelper {
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
     private final MemberRepository memberRepository;
-    private final ReplyMapper replyMapper;
-    private final BoardMapper boardMapper;
 
     /**
      * BoardDTO 입력값 검증
@@ -91,8 +86,8 @@ public class ValidationHelper {
     /**
      * ReplyDTO 입력값 검증
      */
-    public void replyInput(ReplyDTO.Request replyDTO) {
-        if ((replyDTO.getBoardId() == null) || (replyDTO.getWriterId() == null) || replyDTO.getContent().isBlank()) {
+    public void replyInput(ReplyDTO replyDTO) {
+        if (replyDTO.getBoardId() == null || replyDTO.getWriterId() == null || replyDTO.getContent().isBlank()) {
             throw new ReplyException(ErrorCode.NULL_OR_BLANK);
         }
         if (replyDTO.getContent().length() > MAX_REPLY_CONTENT_LENGTH) {
@@ -121,7 +116,7 @@ public class ValidationHelper {
      * Board 존재 여부 검증
      */
     public void boardExist(Long boardId) {
-        if (!boardMapper.existsById(boardId)) {
+        if (!boardRepository.existsById(boardId)) {
             throw new BoardException(ErrorCode.BOARD_NOT_FOUND);
         }
     }
@@ -139,8 +134,8 @@ public class ValidationHelper {
     /**
      * Reply 존재 여부 검증
      */
-    public void replyExist(Long id) {
-        if (!replyMapper.existsById(id)) {
+    public void replyExist(Long replyId) {
+        if (!replyRepository.existsById(replyId)) {
             throw new ReplyException(ErrorCode.REPLY_NOT_FOUND);
         }
     }
@@ -171,8 +166,8 @@ public class ValidationHelper {
     /**
      * Reply 소유자 검증
      */
-    public void checkReplyOwnership(Long writerId, RemoveDTO removeDTO) {
-        if (!writerId.equals(removeDTO.getWriterId())) {
+    public void checkReplyOwnership(Reply reply, Long writerId) {
+        if (!reply.getWriter().getId().equals(writerId)) {
             throw new ReplyException(ErrorCode.ACCESS_DENIED);
         }
     }

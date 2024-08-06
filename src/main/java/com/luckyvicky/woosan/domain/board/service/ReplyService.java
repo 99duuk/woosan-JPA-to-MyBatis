@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface ReplyService {
 
-    void createReply(ReplyDTO.Request replyDTO);
+    void createReply(ReplyDTO replyDTO);
 
     @Transactional(readOnly = true)
-    PageResponseDTO<ReplyDTO.Response> getReplies(Long boardId, PageRequestDTO pageRequestDTO);
+    PageResponseDTO<ReplyDTO> getReplies(Long boardId, PageRequestDTO pageRequestDTO);
 
     @Transactional
     void deleteReply(RemoveDTO removeDTO);
