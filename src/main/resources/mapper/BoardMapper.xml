@@ -1,0 +1,15 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luckyvicky.woosan.domain.board.mapper.BoardMapper">
+
+
+
+
+    <update id="updateReplyCount">
+        UPDATE board
+        SET reply_count = reply_count + #{count}
+        WHERE id = #{boardId}
+    </update>
+</mapper>

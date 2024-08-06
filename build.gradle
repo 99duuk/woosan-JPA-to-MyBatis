@@ -12,6 +12,8 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+	withJavadocJar()
+	withSourcesJar()
 }
 
 repositories {
@@ -23,8 +25,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'mysql:mysql-connector-java:8.0.28'
 	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'mysql:mysql-connector-java:8.0.28'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testCompileOnly 'org.projectlombok:lombok'
@@ -48,7 +50,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-	
+
 	// 오브젝트 스토리지
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.58'
 
@@ -62,21 +64,26 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.session:spring-session-data-redis'
 
-// Elasticsearch dependencies
-//	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-//	implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.7.0'
-//	implementation 'co.elastic.clients:elasticsearch-java:7.17.0'
-//	implementation 'org.elasticsearch.client:elasticsearch-rest-client:7.7.0'
-
+	// Elasticsearch dependencies
 	implementation 'com.internetitem:logback-elasticsearch-appender:1.6'
 	implementation 'dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.2.1'
-
-
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 	implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.10.0'
 	implementation 'org.springframework.data:spring-data-elasticsearch:4.1.6'
 	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+	// querydsl
+//	implementation 'com.querydsl:querydsl-jpa:5.0.0'
+//	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jpa'
+//	compileOnly 'com.querydsl:querydsl-core:5.0.0'
+
+	// Spring boot 3.x이상에서 QueryDsl 패키지를 정의하는 방법
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()
@@ -104,4 +111,16 @@ build.dependsOn(appNpmInstall)
 
 tasks.withType(Test) {
 	enabled = false
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src/main/java', 'build/generated/source/apt/main']
+		}
+	}
+}
+
+tasks.withType(JavaCompile) {
+	options.annotationProcessorPath = configurations.annotationProcessor
 }

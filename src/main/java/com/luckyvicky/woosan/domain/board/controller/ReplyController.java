@@ -24,7 +24,7 @@ public class ReplyController {
      * 댓글 작성
      */
     @PostMapping("/add")
-    public ResponseEntity<Void> createReply(@RequestBody ReplyDTO replyDTO){
+    public ResponseEntity<Void> createReply(@RequestBody ReplyDTO.Request replyDTO){
         replyService.createReply(replyDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
         }
@@ -33,8 +33,9 @@ public class ReplyController {
      * 댓글 조회
      */
     @GetMapping("/{boardId}")
-    public ResponseEntity<PageResponseDTO<ReplyDTO>> getReply(@PathVariable Long boardId, PageRequestDTO pageRequestDTO) {
-        PageResponseDTO<ReplyDTO> replyDTO  = replyService.getReplies(boardId, pageRequestDTO);
+    public ResponseEntity<PageResponseDTO<ReplyDTO.Response>> getReply(@PathVariable Long boardId, PageRequestDTO pageRequestDTO) {
+        PageResponseDTO<ReplyDTO.Response> replyDTO  = replyService.getReplies(boardId, pageRequestDTO);
+        log.info("#####"+replyDTO.getDtoList());
         return new ResponseEntity<>(replyDTO, HttpStatus.OK);
     }
 
