@@ -47,4 +47,11 @@
         DELETE FROM reply WHERE parent_id = #{parentId}
     </delete>
 
+
+
+    <update id="updateLikesCount">
+        UPDATE reply
+        SET likes_count = likes_count + #{count}
+        WHERE id = #{id}
+    </update>
 </mapper>

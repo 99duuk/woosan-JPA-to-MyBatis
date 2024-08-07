@@ -129,8 +129,8 @@ public class ValidationHelper {
     /**
      * Writer 존재 여부 검증
      */
-    public void writerExist(Long writerId) {
-        if (writerId == null) {
+    public void memberExist(Long memberId) {
+        if (memberId == null) {
             throw new MemberException(ErrorCode.MEMBER_NOT_FOUND);
         }
     }

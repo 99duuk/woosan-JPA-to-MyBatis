@@ -2,8 +2,31 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.luckyvicky.woosan.domain.lieks.mapper.LikesMapper">
+<mapper namespace="com.luckyvicky.woosan.domain.likes.mapper.LikesMapper">
 
+    <select id="findByMemberIdAndTypeAndTargetId" resultType="com.luckyvicky.woosan.domain.likes.entity.Likes">
+        SELECT * FROM likes
+        WHERE member_id = #{memberId}
+          AND type = #{type}
+          AND target_id = #{targetId}
+    </select>
 
+    <select id="existsByMemberIdAndTypeAndTargetId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM likes
+        WHERE member_id = #{memberId}
+          AND type = #{type}
+          AND target_id = #{targetId}
+    </select>
+
+    <insert id="insertLike">
+        INSERT INTO likes (member_id, type, target_id)
+        VALUES (#{memberId}, #{type}, #{targetId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM likes
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

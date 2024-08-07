@@ -4,7 +4,6 @@ import com.luckyvicky.woosan.domain.board.dto.ReplyDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -20,6 +19,7 @@ public interface ReplyMapper {
     int deleteById(@Param("id") Long id);
     int deleteByParentId(@Param("parentId") Long parentId);
 
+    void updateLikesCount(@Param("id") Long id, @Param("count") int count);
 
     @Select("SELECT COUNT(*) FROM reply WHERE board_id = #{boardId} AND parent_id IS NULL")
     int countRepliesByBoardId(@Param("boardId") Long boardId);

@@ -58,7 +58,7 @@ public class Member {
         this.socialType = socialType;
     }
 
-    // 게시물, 댓글 작성 시 포인트 추가
+    // 게시물, 댓글 작성 시 포인트 지급
     public void addPoint(int points){
         if(this.memberType == MemberType.USER) {
             this.point += points;

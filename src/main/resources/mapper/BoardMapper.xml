@@ -12,4 +12,10 @@
         SET reply_count = reply_count + #{count}
         WHERE id = #{boardId}
     </update>
+
+    <update id="updateLikesCount">
+        UPDATE board
+        SET likes_count = likes_count + #{count}
+        WHERE id = #{boardId}
+    </update>
 </mapper>

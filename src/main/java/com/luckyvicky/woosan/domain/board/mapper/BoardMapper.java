@@ -12,11 +12,10 @@ public interface BoardMapper {
 
     void updateReplyCount(@Param("boardId") Long boardId, @Param("count") int count);
 
+    void updateLikesCount(@Param("boardId") Long boardId, @Param("count") int count);
+
 
 
     @Select("SELECT COUNT(*) > 0 FROM board WHERE id = #{boardId}")
     boolean existsById(@Param("boardId") Long boardId);
-
-    @Select("SELECT * FROM board WHERE id = #{boardId}")
-    Board findBoardById(@Param("boardId") Long boardId);
 }

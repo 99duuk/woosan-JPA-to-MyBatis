@@ -52,7 +52,7 @@ public class ReplyServiceImpl implements ReplyService {
     public void createReply(ReplyDTO.Request replyDTO) {
         validationHelper.replyInput(replyDTO); //필수 입력값 검증
 
-        memberMyBatisMapper.updateMemberPoints(replyDTO.getWriterId(), 1); // 작성자 포인트 증가
+        memberMyBatisMapper.updateMemberPoints(replyDTO.getWriterId(), 1); // 작성자 포인트 지급
         boardMapper.updateReplyCount(replyDTO.getBoardId(), 1);  // 게시글의 댓글 수 증가
         replyMapper.insertReply(replyDTO); // 댓글(답글) 추가
     }
@@ -94,7 +94,14 @@ public class ReplyServiceImpl implements ReplyService {
         // 주어진 부모 댓글 ID에 대한 자식 댓글 조회
         List<ReplyDTO.Response> childReplies = replyMapper.findRepliesByParentId(replyDTO.getId());
         List<ReplyDTO.Response> childReplyDTOs = childReplies.stream()
-                .map(this::convertToReplyDTOWithChildren)
+
+                .map(childReply -> {
+                    // 자식 댓글을 자식 댓글로 변환
+                    ReplyDTO.Response childReplyDTO = convertToReplyDTOWithChildren(childReply);
+                    // 자식 댓글의 프로필 이미지 설정
+                    childReplyDTO.setWriterProfile(fileImgService.findFiles("member", childReply.getWriterId()));
+                    return childReplyDTO;
+                })
                 .collect(Collectors.toList());
 
         // 자식 댓글 리스트를 부모 댓글의 children 필드에 설정
@@ -119,7 +126,6 @@ public class ReplyServiceImpl implements ReplyService {
 
 
         int childReplyCount = replyMapper.deleteByParentId(removeDTO.getId());  // 자식 댓글 삭제
-
         int parentReplyCount = replyMapper.deleteById(removeDTO.getId()); // 부모 댓글 삭제
 
 

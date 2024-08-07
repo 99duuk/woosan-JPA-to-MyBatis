@@ -35,7 +35,6 @@ public class ReplyController {
     @GetMapping("/{boardId}")
     public ResponseEntity<PageResponseDTO<ReplyDTO.Response>> getReply(@PathVariable Long boardId, PageRequestDTO pageRequestDTO) {
         PageResponseDTO<ReplyDTO.Response> replyDTO  = replyService.getReplies(boardId, pageRequestDTO);
-        log.info("#####"+replyDTO.getDtoList());
         return new ResponseEntity<>(replyDTO, HttpStatus.OK);
     }
 
