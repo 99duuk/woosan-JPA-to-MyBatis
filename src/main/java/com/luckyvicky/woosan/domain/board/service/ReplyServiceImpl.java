@@ -118,11 +118,9 @@ public class ReplyServiceImpl implements ReplyService {
     @Transactional
     public void deleteReply(RemoveDTO removeDTO) {
         validationHelper.replyExist(removeDTO.getId()); // 댓글 존재 여부 확인
+        validationHelper.checkReplyOwnership(removeDTO); // 작성자 검증
 
-        Long writerId = replyMapper.findWriterIdById(removeDTO.getId());
-        validationHelper.checkReplyOwnership(writerId, removeDTO); // 작성자 검증
-
-        Long boardId = replyMapper.findBoardIdById(removeDTO.getId()); // removeDTO에 boardId가 없기 때문에 조회 (FE)
+        Long boardId = replyMapper.findBoardIdById(removeDTO.getId()); // (FE) removeDTO에 boardId가 없기 때문에 조회
 
 
         int childReplyCount = replyMapper.deleteByParentId(removeDTO.getId());  // 자식 댓글 삭제

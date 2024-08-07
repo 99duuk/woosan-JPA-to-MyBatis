@@ -1,6 +1,7 @@
 package com.luckyvicky.woosan.domain.board.mapper;
 
 import com.luckyvicky.woosan.domain.board.dto.ReplyDTO;
+import com.luckyvicky.woosan.domain.likes.mapper.LikeableMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -8,7 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 @Mapper
-public interface ReplyMapper {
+public interface ReplyMapper extends LikeableMapper {
 
     void insertReply(ReplyDTO.Request replyDTO);
 
@@ -33,4 +34,5 @@ public interface ReplyMapper {
     @Select("SELECT board_id FROM reply WHERE id = #{id}")
     Long findBoardIdById(@Param("id") Long id);
 
+    int getLikesCount(@Param("targetId") Long targetId);
 }

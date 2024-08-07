@@ -6,6 +6,7 @@ import com.luckyvicky.woosan.domain.board.dto.BoardListDTO;
 import com.luckyvicky.woosan.domain.board.dto.RemoveDTO;
 import com.luckyvicky.woosan.domain.board.dto.UpdateBoardDTO;
 import com.luckyvicky.woosan.domain.board.service.BoardService;
+import com.luckyvicky.woosan.domain.board.service.CsService;
 import com.luckyvicky.woosan.domain.fileImg.dto.FileUpdateDTO;
 import com.luckyvicky.woosan.domain.fileImg.service.FileImgService;
 import com.luckyvicky.woosan.domain.report.dto.ReportDTO;
@@ -28,6 +29,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final BoardService boardService;
+    private final CsService csService;
     private final ReportService reportService;
     private final FileImgService fileImgService;
 
@@ -48,7 +50,7 @@ public class AdminController {
      */
     @GetMapping("/notices")
     public ResponseEntity<PageResponseDTO<BoardListDTO>> getNoticePage(PageRequestDTO pageRequestDTO) {
-        PageResponseDTO<BoardListDTO> responseDTO = boardService.getNoticePage(pageRequestDTO);
+        PageResponseDTO<BoardListDTO> responseDTO = csService.getNoticePage(pageRequestDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 

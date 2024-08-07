@@ -5,8 +5,8 @@
 <mapper namespace="com.luckyvicky.woosan.domain.board.mapper.ReplyMapper">
 
     <insert id="insertReply">
-        INSERT INTO reply (board_id, content, writer_id, parent_id)
-        VALUES (#{boardId}, #{content}, #{writerId}, #{parentId})
+        INSERT INTO reply (board_id, content, writer_id, parent_id, reg_date)
+        VALUES (#{boardId}, #{content}, #{writerId}, #{parentId}, now())
     </insert>
 
 
@@ -54,4 +54,10 @@
         SET likes_count = likes_count + #{count}
         WHERE id = #{id}
     </update>
+
+    <select id="getLikesCount">
+        SELECT likes_count
+        FROM reply
+        WHERE id = #{targetId}
+    </select>
 </mapper>

@@ -5,6 +5,92 @@
 <mapper namespace="com.luckyvicky.woosan.domain.board.mapper.BoardMapper">
 
 
+    <insert id="insertBoard">
+        INSERT INTO board (title, content, category_name, writer_id, reg_date, update_time)
+        VALUES (#{title}, #{content}, #{categoryName}, #{writerId}, now(), now())
+    </insert>
+
+    <select id="findAllByCategoryName" resultMap="boardListDTO">
+        SELECT b.id, b.writer_id, m.nickname, b.title, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_id = m.id
+        WHERE b.is_deleted = false
+        <if test="categoryName != null and categoryName != ''">
+            AND b.category_name = #{categoryName}
+        </if>
+        ORDER BY b.reg_date DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countBoardsByCategory" resultType="long">
+        SELECT COUNT(*)
+        FROM board
+        WHERE is_deleted = false
+        <if test="categoryName != null and categoryName != ''">
+            AND category_name = #{categoryName}
+        </if>
+    </select>
+
+
+    <select id="findFirstNotice" resultMap="boardListDTO">
+        SELECT b.id, b.writer_id, m.nickname, b.title, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_id = m.id
+        WHERE category_name = #{categoryName}
+          AND is_deleted = false
+        LIMIT 1
+    </select>
+
+    <select id="findTop3OrderByViewsDesc" resultMap="boardListDTO">
+        SELECT b.id, b.writer_id, m.nickname, b.title, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_id = m.id
+        WHERE is_deleted = false
+        ORDER BY views DESC
+        LIMIT 3
+    </select>
+
+
+    <select id="findById" resultMap="boardDTO">
+        SELECT b.id, b.writer_id, m.nickname, b.title, b.content, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_id = m.id
+        WHERE b.id = #{id}
+          AND is_deleted = false
+    </select>
+
+
+    <update id="updateBoard">
+        UPDATE board
+        SET title = #{title}, content = #{content}, update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByIdForUpdate" resultMap="updateBoardDTO">
+        SELECT id, writer_id, title, content, reg_date, category_name
+        FROM board
+        WHERE id = #{id}
+          AND is_deleted = false
+    </select>
+
+    <update id="deleteBoard">
+        UPDATE board
+        SET is_deleted = true
+        WHERE id = #{id}
+    </update>
+
+
+
+
+    <update id="addViewCount">
+        UPDATE board
+        SET views = views + 1
+        WHERE id = #{id}
+    </update>
 
 
     <update id="updateReplyCount">
@@ -18,4 +104,72 @@
         SET likes_count = likes_count + #{count}
         WHERE id = #{boardId}
     </update>
+
+    <select id="getLikesCount">
+        SELECT likes_count
+        FROM board
+        WHERE id = #{targetId}
+    </select>
+
+
+    <resultMap id="boardListDTO" type="com.luckyvicky.woosan.domain.board.dto.BoardListDTO">
+        <id property="id" column="id"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="title" column="title"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="views" column="views"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="replyCount" column="reply_count"/>
+    </resultMap>
+
+    <resultMap id="boardDTO" type="com.luckyvicky.woosan.domain.board.dto.BoardDTO">
+        <id property="id" column="id"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="views" column="views"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="replyCount" column="reply_count"/>
+    </resultMap>
+
+    <resultMap id="updateBoardDTO" type="com.luckyvicky.woosan.domain.board.dto.UpdateBoardDTO">
+        <id property="id" column="id"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+
+    <select id="findTop5Notices" resultMap="boardListDTO">
+        SELECT id, title, reg_date, category_name
+        FROM board
+        WHERE is_deleted = false
+        AND category_name = #{categoryName}
+        ORDER BY reg_date DESC
+        LIMIT 5
+    </select>
+
+    <select id="findTop10OrderByLikesCountDesc" resultMap="boardListDTO">
+        SELECT id, title, likes_count, category_name
+        FROM board
+        WHERE is_deleted = false
+        ORDER BY likes_count DESC
+        LIMIT 10
+    </select>
+
+    <select id="findNoticeById" resultMap="boardDTO">
+        SELECT b.id, b.writer_id, m.nickname, b.title, b.content, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_id = m.id
+        WHERE b.id = #{id}
+          AND is_deleted = false
+          AND category_name = #{categoryName}
+    </select>
 </mapper>

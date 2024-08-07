@@ -2,6 +2,7 @@ package com.luckyvicky.woosan.domain.board.controller;
 
 import com.luckyvicky.woosan.domain.board.dto.*;
 import com.luckyvicky.woosan.domain.board.service.AIService;
+import com.luckyvicky.woosan.domain.board.service.CsService;
 import com.luckyvicky.woosan.global.util.PageRequestDTO;
 import com.luckyvicky.woosan.domain.board.service.BoardService;
 import com.luckyvicky.woosan.global.util.PageResponseDTO;
@@ -21,6 +22,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final CsService csService;
     private final AIService aiService;
 
     /**
@@ -49,7 +51,7 @@ public class BoardController {
      */
     @GetMapping("/cs/notices")
     public ResponseEntity<PageResponseDTO<BoardListDTO>> getNoticePage(PageRequestDTO pageRequestDTO) {
-        PageResponseDTO<BoardListDTO> responseDTO = boardService.getNoticePage(pageRequestDTO);
+        PageResponseDTO<BoardListDTO> responseDTO = csService.getNoticePage(pageRequestDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
@@ -59,7 +61,7 @@ public class BoardController {
      */
     @GetMapping("/notices")
     public ResponseEntity<List<BoardListDTO>> getNotices() {
-        List<BoardListDTO> boardListDTO = boardService.getNotices();
+        List<BoardListDTO> boardListDTO = csService.getNotices();
         return new ResponseEntity<>(boardListDTO, HttpStatus.OK);
     }
 
@@ -69,7 +71,7 @@ public class BoardController {
      */
     @GetMapping("/best")
     public ResponseEntity<List<BoardListDTO>> getBestBoard() {
-        List<BoardListDTO> boardListDTO = boardService.getBestBoard();
+        List<BoardListDTO> boardListDTO = csService.getBestBoard();
         return new ResponseEntity<>(boardListDTO, HttpStatus.OK);
     }
 
@@ -88,7 +90,7 @@ public class BoardController {
      */
     @GetMapping("/notices/{id}")
     public ResponseEntity<BoardDTO> getNotice(@PathVariable("id") Long id) {
-        BoardDTO boardDTO = boardService.getNotice(id);
+        BoardDTO boardDTO = csService.getNotice(id);
         return new ResponseEntity<>(boardDTO, HttpStatus.OK);
     }
 

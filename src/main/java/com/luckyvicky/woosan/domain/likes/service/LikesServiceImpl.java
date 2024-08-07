@@ -4,6 +4,7 @@ import com.luckyvicky.woosan.domain.board.mapper.BoardMapper;
 import com.luckyvicky.woosan.domain.board.mapper.ReplyMapper;
 import com.luckyvicky.woosan.domain.likes.entity.Likes;
 import com.luckyvicky.woosan.domain.likes.exception.LikeException;
+import com.luckyvicky.woosan.domain.likes.mapper.LikeableMapper;
 import com.luckyvicky.woosan.domain.likes.mapper.LikesMapper;
 import com.luckyvicky.woosan.domain.member.mybatisMapper.MemberMyBatisMapper;
 import com.luckyvicky.woosan.global.exception.ErrorCode;
@@ -53,40 +54,72 @@ public class LikesServiceImpl implements LikesService {
      * 이미 추천이 되어 있는 경우, 추천 취소
      */
     public void removeLike(Likes existingLike, String type, Long targetId, Long memberId) {
-        likesMapper.deleteLike(existingLike.getId()); // 추천 정보 삭제
-        memberMyBatisMapper.updateMemberPoints(memberId, -5); // 포인트 차감
+        validationHelper.memberExistAndUpdatePoints(memberId, -5); // 회원 존재 여부 확인 & 포인트 차감
         updateLikeCount(type, targetId, -1); // likesCount 감소
+        likesMapper.deleteLike(existingLike.getId()); // 추천 정보 삭제
     }
 
     /**
      * 추천이 되어있지 않은 경우, 추천 추가
      */
     private void insertLike(String type, Long targetId, Long memberId) {
-        validationHelper.memberExist(memberId); // 회원 존재 여부 확인
-        memberMyBatisMapper.updateMemberPoints(memberId, 5); // 포인트 지급
-        likesMapper.insertLike(memberId, type, targetId); // 추천 정보 추가
+        validationHelper.memberExistAndUpdatePoints(memberId, 5); // 회원 존재 여부 확인 & 포인트 지급
         updateLikeCount(type, targetId, 1); // likesCount 증가
+        likesMapper.insertLike(memberId, type, targetId); // 추천 정보 추가
     }
 
 
+//    /**
+//     * 좋아요 수를 업데이트
+//     */
+//    private void updateLikeCount(String type, Long targetId, int likesCount) {
+//            if (TYPE_BOARD.equals(type)) {
+//                int currentLikesCount = boardMapper.getLikesCount(targetId); // 현재 좋아요 수 조회
+//                if (currentLikesCount + likesCount < 0) {
+//                    throw new LikeException(ErrorCode.LIKES_COUNT_NEGATIVE); // 좋아요 수가 음수일 경우 예외 처리
+//                }
+//                boardMapper.updateLikesCount(targetId, likesCount);
+//            } else if (TYPE_REPLY.equals(type)) {
+//                int currentLikesCount = replyMapper.getLikesCount(targetId); // 현재 좋아요 수 조회
+//                if (currentLikesCount + likesCount < 0) {
+//                    throw new LikeException(ErrorCode.LIKES_COUNT_NEGATIVE); // 좋아요 수가 음수일 경우 예외 처리
+//                }
+//                replyMapper.updateLikesCount(targetId, likesCount);
+//            } else {
+//                throw new LikeException(ErrorCode.INVALID_TYPE); // 유효하지 않은 타입 처리
+//            }
+//        }
     /**
      * 좋아요 수를 업데이트
      */
     private void updateLikeCount(String type, Long targetId, int likesCount) {
-        if (TYPE_BOARD.equals(type)) {
-            boardMapper.updateLikesCount(targetId, likesCount);
-        } else if (TYPE_REPLY.equals(type)) {
-            replyMapper.updateLikesCount(targetId, likesCount);
-        } else {
-            throw new LikeException(ErrorCode.INVALID_TYPE); // 유효하지 않은 타입 처리
+        switch (type) {
+            case TYPE_BOARD:
+                updateLikes(boardMapper, targetId, likesCount);
+                break;
+            case TYPE_REPLY:
+                updateLikes(replyMapper, targetId, likesCount);
+                break;
+            default:
+                throw new LikeException(ErrorCode.INVALID_TYPE);
         }
+    }
 
+    /**
+     * 좋아요 수를 업데이트하는 공통 메서드
+     */
+    private void updateLikes(LikeableMapper mapper, Long targetId, int likesCount) {
+        int currentLikesCount = mapper.getLikesCount(targetId); // 현재 좋아요 수 조회
+        if (currentLikesCount + likesCount < 0) {
+            throw new LikeException(ErrorCode.LIKES_COUNT_NEGATIVE); // 좋아요 수가 음수일 경우 예외 처리
+        }
+        mapper.updateLikesCount(targetId, likesCount);
     }
 
 
-    /**
-     * 추천 여부 확인
-     */
+        /**
+         * 추천 여부 확인
+         */
     @Override
     @Transactional(readOnly = true)
     public boolean isLiked(Long memberId, String type, Long targetId) {

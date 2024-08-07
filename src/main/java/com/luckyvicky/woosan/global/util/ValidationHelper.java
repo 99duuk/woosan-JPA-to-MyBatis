@@ -15,6 +15,7 @@ import com.luckyvicky.woosan.domain.board.repository.jpa.ReplyRepository;
 import com.luckyvicky.woosan.domain.likes.exception.LikeException;
 import com.luckyvicky.woosan.domain.member.entity.Member;
 import com.luckyvicky.woosan.domain.member.entity.MemberType;
+import com.luckyvicky.woosan.domain.member.mybatisMapper.MemberMyBatisMapper;
 import com.luckyvicky.woosan.domain.member.repository.jpa.MemberRepository;
 import com.luckyvicky.woosan.global.exception.ErrorCode;
 import com.luckyvicky.woosan.global.exception.MemberException;
@@ -32,6 +33,7 @@ public class ValidationHelper {
     private final MemberRepository memberRepository;
     private final ReplyMapper replyMapper;
     private final BoardMapper boardMapper;
+    private final MemberMyBatisMapper memberMyBatisMapper;
 
     /**
      * BoardDTO 입력값 검증
@@ -129,10 +131,11 @@ public class ValidationHelper {
     /**
      * Writer 존재 여부 검증
      */
-    public void memberExist(Long memberId) {
+    public void memberExistAndUpdatePoints(Long memberId, int points) {
         if (memberId == null) {
             throw new MemberException(ErrorCode.MEMBER_NOT_FOUND);
         }
+        memberMyBatisMapper.updateMemberPoints(memberId, points);
     }
 
 
@@ -160,10 +163,9 @@ public class ValidationHelper {
      * 게시물 소유자 검증
      * 작성자 일치 여부 확인
      */
-    public void checkBoardOwnership(Long boardId, Long writerId) {
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new BoardException(ErrorCode.BOARD_NOT_FOUND));
-        if (!board.getWriter().getId().equals(writerId)) {
-            throw new BoardException(ErrorCode.ACCESS_DENIED);
+    public void checkBoardOwnership(Long boardId, Long requesterId) {
+        Long writerId = boardMapper.findWriterIdById(boardId); // 게시물 작성자 ID 조회
+        if (!writerId.equals(requesterId)){
         }
     }
 
@@ -171,7 +173,8 @@ public class ValidationHelper {
     /**
      * Reply 소유자 검증
      */
-    public void checkReplyOwnership(Long writerId, RemoveDTO removeDTO) {
+    public void checkReplyOwnership(RemoveDTO removeDTO) {
+        Long writerId = replyMapper.findWriterIdById(removeDTO.getId());
         if (!writerId.equals(removeDTO.getWriterId())) {
             throw new ReplyException(ErrorCode.ACCESS_DENIED);
         }
@@ -212,23 +215,23 @@ public class ValidationHelper {
                 .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
-    /**
-     * 작성자 조회 (포인트 추가)
-     */
-    public Member findWriterAndAddPoints(Long writerId, int point) {
-        Member writer = memberRepository.findById(writerId)
-                .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-        writer.addPoint(point);
-        return writer;
-    }
+//    /**
+//     * 작성자 조회 (포인트 추가)
+//     */
+//    public Member findWriterAndAddPoints(Long writerId, int point) {
+//        Member writer = memberRepository.findById(writerId)
+//                .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+//        writer.addPoint(point);
+//        return writer;
+//    }
 
-    /**
-     * 댓글 조회
-     */
-    public Reply findReply(Long replyId) {
-        return replyRepository.findById(replyId)
-                .orElseThrow(() -> new ReplyException(ErrorCode.REPLY_NOT_FOUND));
-    }
+//    /**
+//     * 댓글 조회
+//     */
+//    public Reply findReply(Long replyId) {
+//        return replyRepository.findById(replyId)
+//                .orElseThrow(() -> new ReplyException(ErrorCode.REPLY_NOT_FOUND));
+//    }
 
     /**
      * 관리자 여부 검증 및 조회
@@ -240,5 +243,14 @@ public class ValidationHelper {
             throw new MemberException(ErrorCode.ACCESS_DENIED);
         }
         return member;
+    }
+
+    /**
+     * 게시물이 null일 경우 예외 처리
+     */
+    public void alreadyDeletedBoard(BoardDTO boardDTO) {
+        if (boardDTO == null) {
+            throw new BoardException(ErrorCode.BOARD_ALREADY_DELETED);
+        }
     }
 }
