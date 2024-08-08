@@ -1,0 +1,90 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luckyvicky.woosan.domain.member.mybatisMapper.MyPageMapper">
+
+    <select id="findMyBoards" resultMap="myBoardDTO">
+        SELECT b.id, b.title, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        WHERE b.writer_id = #{memberId}
+          AND b.is_deleted = false
+        ORDER BY b.reg_date DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="findMyReplies" resultMap="myReplyDTO">
+        SELECT r.id, r.board_id, r.content, r.likes_count, r.parent_id, r.reg_date, r.writer_id, b.title, b.category_name
+        FROM reply r
+        INNER JOIN board b
+        ON r.board_id = b.id
+        WHERE r.writer_id = #{memberId}
+          AND b.is_deleted = false
+        ORDER BY r.reg_date DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="findLikedBoards" resultMap="myBoardDTO">
+        SELECT b.id, b.title, b.reg_date, b.views, b.likes_count, b.category_name, b.reply_count
+        FROM board b
+        INNER JOIN likes l
+            ON b.id = l.target_id
+        WHERE l.type = "게시물"
+          AND l.member_id = #{memberId}
+          AND b.is_deleted = false
+        ORDER BY b.reg_date DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+
+    <select id="findMyBoardsTotalCount" resultType="long">
+        SELECT COUNT(*)
+        FROM board
+        WHERE writer_id = #{memberId}
+          AND is_deleted = false
+    </select>
+
+    <select id="findMyRepliesTotalCount" resultType="long">
+        SELECT COUNT(*)
+        FROM reply r
+        INNER JOIN board b
+        ON r.board_id = b.id
+        WHERE r.writer_id = #{memberId}
+          AND b.is_deleted = false
+    </select>
+
+    <select id="findLikedBoardsTotalCount" resultType="long">
+        SELECT COUNT(*)
+        FROM board b
+        INNER JOIN likes l
+            ON b.id = l.target_id
+        WHERE type = '게시글'
+          AND writer_id = #{memberId}
+          AND is_deleted = false
+    </select>
+
+
+
+    <resultMap id="myBoardDTO" type="com.luckyvicky.woosan.domain.member.dto.MyBoardDTO">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="views" column="views"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="replyCount" column="reply_count"/>
+    </resultMap>
+
+    <resultMap id="myReplyDTO" type="com.luckyvicky.woosan.domain.member.dto.MyReplyDTO">
+        <id property="id" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="content" column="content"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="writerId" column="writer_id"/>
+        <result property="title" column="title"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+
+</mapper>

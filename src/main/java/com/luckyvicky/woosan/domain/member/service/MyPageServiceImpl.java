@@ -1,11 +1,9 @@
 package com.luckyvicky.woosan.domain.member.service;
 
 import com.luckyvicky.woosan.domain.board.dto.BoardDTO;
-import com.luckyvicky.woosan.domain.board.entity.Board;
-import com.luckyvicky.woosan.domain.board.projection.IMyBoard;
-import com.luckyvicky.woosan.domain.board.projection.IMyReply;
 import com.luckyvicky.woosan.domain.board.repository.jpa.BoardRepository;
 import com.luckyvicky.woosan.domain.board.repository.jpa.ReplyRepository;
+import com.luckyvicky.woosan.domain.member.mybatisMapper.MyPageMapper;
 import com.luckyvicky.woosan.global.annotation.SlaveDBRequest;
 import com.luckyvicky.woosan.global.util.CommonUtils;
 import com.luckyvicky.woosan.global.util.ValidationHelper;
@@ -50,20 +48,27 @@ public class MyPageServiceImpl implements MyPageService {
     private final ModelMapper modelMapper;
     private final ValidationHelper validationHelper;
     private final CommonUtils commonUtils;
+    private final MyPageMapper myPageMapper;
 
-    @SlaveDBRequest
     @Override
     @Transactional
     public PageResponseDTO<MyBoardDTO> getMyBoard(MyPageDTO myPageDTO) {
         Long memberId = getMemberId(myPageDTO);
         PageRequestDTO pageRequestDTO = getPageRequestDTO(myPageDTO);
-        validationHelper.findWriter(memberId);
+        pageRequestDTO.validate();
 
-        Page<IMyBoard> myBoards = boardRepository.findByWriterIdAndIsDeletedFalse(memberId, commonUtils.createPageable(pageRequestDTO));
+        int offset = (pageRequestDTO.getPage() - 1) * pageRequestDTO.getSize();
+        int pageSize = pageRequestDTO.getSize();
 
-        List<MyBoardDTO> myBoardDTOs = commonUtils.mapToDTOList(myBoards.getContent(), MyBoardDTO.class);
+        List<MyBoardDTO> myBoardDTOs = myPageMapper.findMyBoards(memberId, offset, pageSize);
 
-        return commonUtils.createPageResponseDTO(pageRequestDTO, myBoardDTOs, myBoards.getTotalElements());
+        long totalCount = myPageMapper.findMyBoardsTotalCount(memberId);
+
+        return PageResponseDTO.<MyBoardDTO>withAll()
+                .dtoList(myBoardDTOs)
+                .pageRequestDTO(pageRequestDTO)
+                .totalCount(totalCount)
+                .build();
     }
 
     @SlaveDBRequest
@@ -72,30 +77,44 @@ public class MyPageServiceImpl implements MyPageService {
     public PageResponseDTO<MyReplyDTO> getMyReply(MyPageDTO myPageDTO) {
         Long memberId = getMemberId(myPageDTO);
         PageRequestDTO pageRequestDTO = getPageRequestDTO(myPageDTO);
-        validationHelper.findWriter(memberId);
 
-        Page<IMyReply> myReplies = replyRepository.findByWriterId(memberId, commonUtils.createPageable(pageRequestDTO));
+        pageRequestDTO.validate();
 
-        List<MyReplyDTO> myReplyDTOs = commonUtils.mapToDTOList(myReplies.getContent(), MyReplyDTO.class);
+        int offset = (pageRequestDTO.getPage() - 1) * pageRequestDTO.getSize();
+        int pageSize = pageRequestDTO.getSize();
 
-        return commonUtils.createPageResponseDTO(pageRequestDTO, myReplyDTOs, myReplies.getTotalElements());
+        List<MyReplyDTO> myReplyDTOs = myPageMapper.findMyReplies(memberId, offset, pageSize);
+
+        long totalCount = myPageMapper.findMyRepliesTotalCount(memberId);
+
+        return PageResponseDTO.<MyReplyDTO>withAll()
+                .dtoList(myReplyDTOs)
+                .pageRequestDTO(pageRequestDTO)
+                .totalCount(totalCount)
+                .build();
     }
 
     @SlaveDBRequest
     @Override
-    public PageResponseDTO<BoardDTO> myLikeBoardList(MyPageDTO myPageDTO) {
+    public PageResponseDTO<MyBoardDTO> myLikeBoardList(MyPageDTO myPageDTO) {
         Long memberId = getMemberId(myPageDTO);
         PageRequestDTO pageRequestDTO = getPageRequestDTO(myPageDTO);
-        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize(), Sort.by("id").descending());
+        pageRequestDTO.validate();
 
-        Page<Board> result = boardRepository.findLikedBoards(memberId, pageable);
+        int offset = (pageRequestDTO.getPage() - 1) * pageRequestDTO.getSize();
+        int pageSize = pageRequestDTO.getSize();
 
-        List<BoardDTO> dtoList = result.getContent().stream()
-                .map(board -> modelMapper.map(board, BoardDTO.class))
-                .collect(Collectors.toList());
+        List<MyBoardDTO> myBoardDTOs = myPageMapper.findLikedBoards(memberId, offset, pageSize);
 
-        return createPageResponseDTO(dtoList, pageRequestDTO, result.getTotalElements());
+        long totalCount = myPageMapper.findLikedBoardsTotalCount(memberId);
+
+        return PageResponseDTO.<MyBoardDTO>withAll()
+                .dtoList(myBoardDTOs)
+                .pageRequestDTO(pageRequestDTO)
+                .totalCount(totalCount)
+                .build();
     }
+
 
     @SlaveDBRequest
     @Override

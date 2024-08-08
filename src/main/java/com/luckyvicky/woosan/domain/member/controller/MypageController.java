@@ -48,8 +48,8 @@ public class MypageController {
      * 추천한 게시글
      * */
     @PostMapping("like")
-    public ResponseEntity<PageResponseDTO<BoardDTO>> myLikedBoard(@RequestBody MyPageDTO myPageDTO) {
-        PageResponseDTO<BoardDTO> responseDTO = myPageService.myLikeBoardList(myPageDTO);
+    public ResponseEntity<PageResponseDTO<MyBoardDTO>> myLikedBoard(@RequestBody MyPageDTO myPageDTO) {
+        PageResponseDTO<MyBoardDTO> responseDTO = myPageService.myLikeBoardList(myPageDTO);
         return ResponseEntity.ok(responseDTO);
     }
 

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface MyPageService {
 
     @Transactional(readOnly = true)
-    PageResponseDTO<BoardDTO> myLikeBoardList(MyPageDTO myPageDTO);
+    PageResponseDTO<MyBoardDTO> myLikeBoardList(MyPageDTO myPageDTO);
 
     @Transactional(readOnly = true)
     PageResponseDTO<MyReplyDTO> getMyReply(MyPageDTO myPageDTO);

@@ -43,19 +43,19 @@ public class Reply {
     @ColumnDefault("0")
     @Min(0)
     private int likesCount; // 추천 수
-
-
-    public void changeContent(String content) {
-        this.content = content;
-    }
-
-
-    // 추천수 변경
-    public void changeLikesCount(int likesCount){
-        if(this.likesCount + likesCount < 0) {
-            throw new LikeException(ErrorCode.LIKES_COUNT_NEGATIVE);
-        }
-        this.likesCount += likesCount;
-    }
+//
+//
+//    public void changeContent(String content) {
+//        this.content = content;
+//    }
+//
+//
+//    // 추천수 변경
+//    public void changeLikesCount(int likesCount){
+//        if(this.likesCount + likesCount < 0) {
+//            throw new LikeException(ErrorCode.LIKES_COUNT_NEGATIVE);
+//        }
+//        this.likesCount += likesCount;
+//    }
 
 }
