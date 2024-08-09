@@ -49,4 +49,6 @@ public interface BoardMapper extends LikeableMapper {
     List<BoardListDTO> findTop5Notices(@Param("categoryName") String categoryName);
 
     List<BoardListDTO> findTop10OrderByLikesCountDesc();
+
+    boolean findIsDeleted(@Param("boardId") Long boardId);
 }

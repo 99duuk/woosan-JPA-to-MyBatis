@@ -4,8 +4,6 @@ package com.luckyvicky.woosan.global.util;
 import com.luckyvicky.woosan.domain.board.dto.BoardDTO;
 import com.luckyvicky.woosan.domain.board.dto.RemoveDTO;
 import com.luckyvicky.woosan.domain.board.dto.ReplyDTO;
-import com.luckyvicky.woosan.domain.board.entity.Board;
-import com.luckyvicky.woosan.domain.board.entity.Reply;
 import com.luckyvicky.woosan.domain.board.exception.BoardException;
 import com.luckyvicky.woosan.domain.board.exception.ReplyException;
 import com.luckyvicky.woosan.domain.board.mapper.BoardMapper;
@@ -13,8 +11,6 @@ import com.luckyvicky.woosan.domain.board.mapper.ReplyMapper;
 import com.luckyvicky.woosan.domain.board.repository.jpa.BoardRepository;
 import com.luckyvicky.woosan.domain.board.repository.jpa.ReplyRepository;
 import com.luckyvicky.woosan.domain.likes.exception.LikeException;
-import com.luckyvicky.woosan.domain.member.entity.Member;
-import com.luckyvicky.woosan.domain.member.entity.MemberType;
 import com.luckyvicky.woosan.domain.member.mybatisMapper.MemberMyBatisMapper;
 import com.luckyvicky.woosan.domain.member.repository.jpa.MemberRepository;
 import com.luckyvicky.woosan.global.exception.ErrorCode;
@@ -23,6 +19,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import static com.luckyvicky.woosan.global.util.Constants.*;
+
 
 @Component
 @AllArgsConstructor
@@ -149,14 +146,14 @@ public class ValidationHelper {
     }
 
 
-    /**
-     * 부모 댓글 존재 여부 검증
-     */
-    public void parentId(Long parentId) {
-        if (!replyRepository.existsById(parentId)) {
-            throw new ReplyException(ErrorCode.PARENT_REPLY_NOT_FOUND);
-        }
-    }
+//    /**
+//     * 부모 댓글 존재 여부 검증
+//     */
+//    public void parentId(Long parentId) {
+//        if (!replyRepository.existsById(parentId)) {
+//            throw new ReplyException(ErrorCode.PARENT_REPLY_NOT_FOUND);
+//        }
+//    }
 
 
     /**
@@ -180,40 +177,42 @@ public class ValidationHelper {
         }
     }
 
+//    /**
+//     * 게시물 삭제 여부 확인
+//     */
+//    public void checkBoardNotDeleted(Board board) {
+//        if (board.isDeleted()) {
+//            throw new BoardException(ErrorCode.BOARD_ALREADY_DELETED);
+//        }
+//    }
+
     /**
      * 게시물 삭제 여부 확인
      */
-    public void checkBoardNotDeleted(Board board) {
-        if (board.isDeleted()) {
+    public void checkBoardNotDeleted(Long boardId) {
+        if (boardMapper.findIsDeleted(boardId)) {
             throw new BoardException(ErrorCode.BOARD_ALREADY_DELETED);
         }
     }
 
-    /**
-     * 관리자 여부 확인
-     */
-    public void checkAdmin(Long memberId) {
-        if (memberId != 1) {
-            throw new MemberException(ErrorCode.ACCESS_DENIED);
-        }
-    }
 
 
-    /**
-     * 게시물 조회
-     */
-    public Board findBoard(Long boardId) {
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardException(ErrorCode.BOARD_NOT_FOUND));
-    }
 
-    /**
-     * 작성자 조회
-     */
-    public Member findWriter(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-    }
+//    /**
+//     * 게시물 조회
+//     */
+//    public Board findBoard(Long boardId) {
+//        return boardRepository.findById(boardId)
+//                .orElseThrow(() -> new BoardException(ErrorCode.BOARD_NOT_FOUND));
+//    }
+
+//    /**
+//     * 작성자 조회
+//     */
+//    public Member findWriter(Long memberId) {
+//        return memberRepository.findById(memberId)
+//                .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+//    }
 
 //    /**
 //     * 작성자 조회 (포인트 추가)
@@ -236,13 +235,12 @@ public class ValidationHelper {
     /**
      * 관리자 여부 검증 및 조회
      */
-    public Member checkAndFindAdmin(Long writerId) {
-        Member member = findWriter(writerId);
+    public void checkAdmin(Long memberId) {
+        String memberType = memberMyBatisMapper.findMemberTypeById(memberId);
 
-        if (member.getMemberType() != MemberType.ADMIN) {
+        if (!"ADMIN".equals(memberType)) {
             throw new MemberException(ErrorCode.ACCESS_DENIED);
         }
-        return member;
     }
 
     /**

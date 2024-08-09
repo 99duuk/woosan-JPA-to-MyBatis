@@ -172,4 +172,10 @@
           AND is_deleted = false
           AND category_name = #{categoryName}
     </select>
+
+    <select id="findIsDeleted" resultType="boolean">
+        SELECT is_deleted
+        FROM BOARD
+        WHERE id = #{boardId}
+    </select>
 </mapper>

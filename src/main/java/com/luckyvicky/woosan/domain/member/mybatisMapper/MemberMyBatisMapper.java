@@ -6,4 +6,6 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface MemberMyBatisMapper {
     void updateMemberPoints(@Param("memberId") Long memberId, @Param("point") int point);
+
+    String findMemberTypeById(@Param("memberId") Long memberId);
 }

@@ -1,6 +1,5 @@
 package com.luckyvicky.woosan.domain.member.mybatisMapper;
 
-import com.luckyvicky.woosan.domain.board.dto.BoardDTO;
 import com.luckyvicky.woosan.domain.member.dto.MyBoardDTO;
 import com.luckyvicky.woosan.domain.member.dto.MyReplyDTO;
 import org.apache.ibatis.annotations.Mapper;

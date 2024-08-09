@@ -9,4 +9,10 @@
         SET point = point + #{point}
         WHERE id = #{memberId}
     </update>
+
+    <select id="findMemberTypeById"  resultType="java.lang.String">
+        SELECT member_type
+        FROM member
+        WHERE id = #{memberId}
+    </select>
 </mapper>
